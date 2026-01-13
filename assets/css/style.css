@@ -3,21 +3,38 @@
     --psd-grey: #2B2B2B;
     --psd-dark: #1a1a1a;
     --psd-green: #2ecc71;
+    --controls-height: 140px; /* Rezerwujemy miejsce na dole */
 }
 
 body {
     margin: 0; padding: 0; overflow: hidden;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--psd-dark); color: white;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    height: 100vh; touch-action: none;
+    /* Używamy Flexboxa pionowego dla całej strony */
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center;
+    /* 100dvh radzi sobie lepiej z paskami przeglądarki na mobile */
+    height: 100vh; 
+    height: 100dvh; 
+    touch-action: none;
 }
 
 #game-container {
-    position: relative; width: 100%; max-width: 600px; height: 85vh;
+    position: relative; 
+    width: 100%; 
+    max-width: 600px; 
+    /* Gra rozciąga się, by zająć dostępne miejsce */
+    flex-grow: 1; 
     background: linear-gradient(to bottom, #1a1a1a, #333);
-    border: 4px solid var(--psd-grey); border-bottom: 8px solid var(--psd-red);
-    box-shadow: 0 0 20px rgba(0,0,0,0.5); overflow: hidden;
+    border-left: 4px solid var(--psd-grey); 
+    border-right: 4px solid var(--psd-grey);
+    border-bottom: 4px solid var(--psd-red);
+    box-shadow: 0 0 20px rgba(0,0,0,0.5); 
+    overflow: hidden;
+    /* Zapobiegamy ściskaniu gry poniżej rozsądnego minimum */
+    min-height: 300px;
 }
 
 canvas { display: block; width: 100%; height: 100%; }
@@ -36,100 +53,101 @@ canvas { display: block; width: 100%; height: 100%; }
 .logo-box { margin-bottom: 10px; }
 .logo-box img { height: auto; max-height: 80px; width: 180px; object-fit: contain; display: block; margin: 0 auto; }
 
-.control-selector { display: flex; gap: 10px; margin: 10px 0; width: 300px; }
+.control-selector { display: flex; gap: 10px; margin: 10px 0; width: 100%; max-width: 300px; }
 .ctrl-btn {
-    flex: 1; padding: 8px; background: #444; border: 2px solid transparent; 
-    color: white; cursor: pointer; font-weight: bold; border-radius: 4px; font-size: 12px;
+    flex: 1; padding: 12px; background: #444; border: 2px solid transparent; 
+    color: white; cursor: pointer; font-weight: bold; border-radius: 4px; font-size: 14px;
 }
 .ctrl-btn.active { border-color: var(--psd-red); background: var(--psd-red); }
 
 .btn {
     background-color: var(--psd-red); color: white; border: none;
-    padding: 12px 0; font-size: 18px; font-weight: bold;
-    text-transform: uppercase; cursor: pointer; margin-top: 8px; border-radius: 4px; width: 300px;
+    padding: 15px 0; font-size: 18px; font-weight: bold;
+    text-transform: uppercase; cursor: pointer; margin-top: 8px; border-radius: 4px; 
+    width: 100%; max-width: 300px;
 }
 
 .settings-box {
-    background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-top: 15px; width: 300px;
+    background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-top: 15px; 
+    width: 100%; max-width: 300px; box-sizing: border-box;
 }
 .settings-box label { display: block; font-size: 12px; margin-bottom: 4px; color: #aaa; }
-input[type=range] { width: 100%; accent-color: var(--psd-red); margin-bottom: 8px; }
+input[type=range] { width: 100%; accent-color: var(--psd-red); margin-bottom: 8px; height: 20px; }
 
 .credits { font-size: 10px; color: #666; margin-top: 10px; }
 
-/* Animacje błysków */
+/* Animacje */
 .damage-flash { animation: flashRed 0.3s linear; }
 .heal-flash { animation: flashGreen 0.3s linear; }
+@keyframes flashRed { 0% { border-color: #ff0000; box-shadow: inset 0 0 40px rgba(255,0,0,0.5); } 100% { border-color: var(--psd-grey); box-shadow: none; } }
+@keyframes flashGreen { 0% { border-color: var(--psd-green); box-shadow: inset 0 0 40px rgba(46,204,113,0.5); } 100% { border-color: var(--psd-grey); box-shadow: none; } }
 
-@keyframes flashRed {
-    0% { border-color: #ff0000; box-shadow: inset 0 0 40px rgba(255,0,0,0.5); }
-    100% { border-color: var(--psd-grey); box-shadow: none; }
-}
-@keyframes flashGreen {
-    0% { border-color: var(--psd-green); box-shadow: inset 0 0 40px rgba(46,204,113,0.5); }
-    100% { border-color: var(--psd-grey); box-shadow: none; }
-}
+/* --- RESPANSYWNE STEROWANIE MOBILNE --- */
 
-/* Telefon */
-
-/* Ukrywamy sterowanie domyślnie na każdym urządzeniu */
 #mobile-controls {
-    display: none !important; 
+    display: none; /* Domyślnie ukryte */
     width: 100%;
     max-width: 600px;
-    padding: 10px;
-    box-sizing: border-box;
     background: #1a1a1a;
+    padding: 10px 20px 20px 20px; /* Padding na dole dla iPhone (safe area) */
+    box-sizing: border-box;
+    flex-shrink: 0; /* Nie pozwala zgnieść panelu */
+    border-top: 2px solid #333;
+    z-index: 20;
 }
 
-/* Pokazujemy tylko wtedy, gdy JS wykryje dotyk LUB mały ekran */
 #mobile-controls.active-device {
     display: block !important;
 }
 
-@media (max-width: 768px) {
-    /* Opcjonalnie: możesz tu zostawić automatyczne wykrywanie rozmiaru */
-}
-
 .mobile-btn {
     width: 100%;
-    height: 60px;
+    height: 70px; /* Duży przycisk */
     background: var(--psd-red);
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     font-weight: bold;
-    font-size: 18px;
-    margin-bottom: 15px;
-    display: none; /* Pokażemy tylko w trybach budowania */
+    font-size: 20px;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 0 #9c1519;
+    margin-bottom: 5px;
+}
+.mobile-btn:active {
+    transform: translateY(4px);
+    box-shadow: none;
 }
 
 #touch-slider-area {
     width: 100%;
-    height: 50px;
+    height: 60px; /* Wyższy slider dla wygody */
     position: relative;
     background: #333;
-    border-radius: 25px;
+    border-radius: 30px;
     touch-action: none;
+    margin-top: 5px;
+    border: 2px solid #444;
 }
 
 #slider-handle {
-    width: 60px;
-    height: 40px;
+    width: 70px;
+    height: 50px;
     background: var(--psd-red);
     position: absolute;
-    top: 5px;
+    top: 3px; /* Wyśrodkowanie w pionie */
     left: 0;
-    border-radius: 20px;
+    border-radius: 25px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: bold;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    border: 2px solid rgba(255,255,255,0.2);
+    transition: background-color 0.2s;
 }
+#slider-handle.active { background: white; color: var(--psd-red); }
 
-/* Wyświetlanie tylko na dotyku */
 @media (max-width: 768px) {
-    #mobile-controls { display: block; }
+    #game-container { border-left: none; border-right: none; }
 }

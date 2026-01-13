@@ -5,18 +5,12 @@ let towerAccuracyArray = [];
 const MAX_FLOORS = 100;
 
 function initTowerMode() {
-  // 1. Zatrzymujemy poprzednie dźwięki
   stopMusic();
 
-  // 2. Uruchamiamy muzykę tła (zakładając, że sounds.music jest w game.js)
   if (sounds.music) {
     sounds.music.loop = true;
     sounds.music.volume = document.getElementById("musicVol").value;
-    sounds.music
-      .play()
-      .catch((e) =>
-        console.log("Muzyka czeka na interakcję lub błąd ścieżki:", e),
-      );
+    sounds.music.play().catch((e) => console.log("Muzyka error:", e));
   }
 
   gameState = "TOWER";
@@ -24,32 +18,41 @@ function initTowerMode() {
   overlay.style.display = "none";
 
   towerLevels = [];
-  towerAccuracyArray = []; // Resetujemy statystyki przy starcie
+  towerAccuracyArray = [];
+
+  // SKALOWANIE: Pierwsze piętro to 35% szerokości ekranu (nie mniej niż 100px)
+  let startWidth = Math.max(100, canvas.width * 0.35);
 
   // Pierwsze piętro (fundament)
   towerLevels.push({
-    x: canvas.width / 2 - 100,
+    x: canvas.width / 2 - startWidth / 2,
     y: canvas.height - 40,
-    w: 200,
+    w: startWidth,
     h: 30,
   });
 
   resetFloor(1);
   updateTower();
-  updateMobileUI(); // Telefon Sterowanie
+  updateMobileUI(); 
 }
 
 function resetFloor(level) {
-  currentFloor.speed = 4 + level * 0.15;
-  let width = 200 - level * 1.5; // Opcjonalnie: piętra mogą się lekko zwężać
-  if (width < 40) width = 40;
+  // Pobieramy szerokość ostatniego postawionego piętra
+  let lastW = towerLevels[towerLevels.length - 1].w;
+  
+  // Nowe piętro jest węższe o 2% względem poprzedniego (a nie stałe pixele)
+  let newW = lastW * 0.98;
+  
+  // Minimalna szerokość to np. 10% ekranu
+  let minW = canvas.width * 0.1;
+  if (newW < minW) newW = minW;
 
   currentFloor = {
     x: 0,
     y: towerLevels[towerLevels.length - 1].y - 30,
-    w: width,
+    w: newW,
     h: 30,
-    speed: 4 + level * 0.1, // Coraz szybciej
+    speed: 4 + level * 0.15, // Przyspieszenie
     dir: 1,
   };
 }
@@ -59,7 +62,6 @@ function updateTower() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Efekt trzęsienia ziemi powyżej 20 piętra
   let shakeX = 0;
   let shakeY = 0;
   if (towerLevels.length > 20) {
@@ -71,34 +73,24 @@ function updateTower() {
   ctx.save();
   ctx.translate(shakeX, shakeY);
 
-  // --- RYSOWANIE DŹWIGU ---
-  const craneY = 0; // Wysokość szyny dźwigu na górze ekranu
-  const centerX = canvas.width / 2;
-
-  // 1. Szyna pozioma dźwigu
-  ctx.fillStyle = "#FFD700"; // Żółty kolor ostrzegawczy
+  const craneY = 0; 
+  // Dźwig
+  ctx.fillStyle = "#FFD700";
   ctx.fillRect(0, craneY, canvas.width, 10);
-
-  // 2. Wózek dźwigu (porusza się nad klockiem)
   ctx.fillRect(currentFloor.x + currentFloor.w / 2 - 15, craneY, 30, 20);
 
-  // 3. Liny trzymające piętro
   ctx.strokeStyle = "#555";
   ctx.lineWidth = 2;
   ctx.beginPath();
-  // Lewa lina
   ctx.moveTo(currentFloor.x + 10, currentFloor.y);
   ctx.lineTo(currentFloor.x + currentFloor.w / 2 - 10, craneY + 20);
-  // Prawa lina
   ctx.moveTo(currentFloor.x + currentFloor.w - 10, currentFloor.y);
   ctx.lineTo(currentFloor.x + currentFloor.w / 2 + 10, craneY + 20);
   ctx.stroke();
 
-  // --- KONIEC DŹWIGU ---
-
-  // Rysowanie postawionych pięter
+  // Rysowanie poziomów
   towerLevels.forEach((lvl, index) => {
-    ctx.fillStyle = index === MAX_FLOORS - 1 ? "#FFD700" : "#E31E24"; // Złoty dach
+    ctx.fillStyle = index === MAX_FLOORS - 1 ? "#FFD700" : "#E31E24";
     ctx.fillRect(lvl.x, lvl.y, lvl.w, lvl.h);
     ctx.strokeStyle = "white";
     ctx.strokeRect(lvl.x, lvl.y, lvl.w, lvl.h);
@@ -106,17 +98,22 @@ function updateTower() {
 
   // Ruch aktualnego piętra
   currentFloor.x += currentFloor.speed * currentFloor.dir;
-  if (currentFloor.x <= 0 || currentFloor.x + currentFloor.w >= canvas.width) {
-    currentFloor.dir *= -1;
+  
+  // Odbijanie od krawędzi ekranu
+  if (currentFloor.x <= 0) {
+      currentFloor.x = 0;
+      currentFloor.dir = 1;
+  } else if (currentFloor.x + currentFloor.w >= canvas.width) {
+      currentFloor.x = canvas.width - currentFloor.w;
+      currentFloor.dir = -1;
   }
 
-  // Rysowanie aktualnego piętra
+  // Rysowanie aktualnego
   ctx.fillStyle = towerLevels.length === MAX_FLOORS - 1 ? "#FFD700" : "#E31E24";
   ctx.fillRect(currentFloor.x, currentFloor.y, currentFloor.w, currentFloor.h);
 
   ctx.restore();
 
-  // UI
   document.getElementById("scoreVal").innerText = towerLevels.length;
   document.getElementById("livesVal").innerText = "PIĘTRO";
 
@@ -127,13 +124,10 @@ function dropTowerFloor() {
   if (gameState !== "TOWER") return;
 
   let lastLvl = towerLevels[towerLevels.length - 1];
-
-  // Obliczamy różnicę środków (offset)
   let centerCurrent = currentFloor.x + currentFloor.w / 2;
   let centerLast = lastLvl.x + lastLvl.w / 2;
   let diff = Math.abs(centerCurrent - centerLast);
 
-  // Hit następuje, jeśli krawędzie się dotykają (Twój warunek pixela)
   let hit =
     currentFloor.x + currentFloor.w > lastLvl.x &&
     currentFloor.x < lastLvl.x + lastLvl.w;
@@ -141,8 +135,6 @@ function dropTowerFloor() {
   if (hit) {
     playSFX("point");
 
-    // OBLICZANIE PROCENTÓW dla tego konkretnego piętra:
-    // 100% to idealne pokrycie środków. 0% to dotknięcie samym krawędzią (pixelem).
     let maxAllowedDiff = (currentFloor.w + lastLvl.w) / 2;
     let accuracy = Math.max(0, 100 - (diff / maxAllowedDiff) * 100);
     towerAccuracyArray.push(accuracy);
@@ -158,7 +150,7 @@ function dropTowerFloor() {
       let finalScore = calculateAverageAccuracy();
       endGame(
         "MISTRZ WIEŻOWCÓW!",
-        `Zbudowałeś 100 pięter!<br>Stabilność konstrukcji: <span style="color:var(--psd-red); font-size:40px;">${finalScore}%</span>`,
+        `Zbudowałeś 100 pięter!<br>Stabilność: <span style="color:var(--psd-red); font-size:40px;">${finalScore}%</span>`,
       );
     } else {
       if (currentFloor.y < 250) {
@@ -182,15 +174,18 @@ function calculateAverageAccuracy() {
   return Math.round(sum / towerAccuracyArray.length);
 }
 
-// Obsługa sterowania dla nowego trybu
+// Obsługa sterowania
 window.addEventListener("keydown", (e) => {
   if (e.code === "Space" && gameState === "TOWER") {
     dropTowerFloor();
   }
 });
 
-canvas.addEventListener("mousedown", () => {
-  if (gameState === "TOWER") {
-    dropTowerFloor();
-  }
+canvas.addEventListener("mousedown", (e) => {
+    // Zapobiegamy podwójnemu kliknięciu jeśli kliknięto w panel sterowania (mobile)
+    if(e.target.closest('#mobile-controls')) return;
+    
+    if (gameState === "TOWER") {
+        dropTowerFloor();
+    }
 });
