@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mistrz Dekarski PSD</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+    <div id="game-container">
+        <div class="ui-layer">
+            <div id="label-score">PKT: <span id="scoreVal">0</span></div>
+            <div id="label-lives">DACHY: <span id="livesVal">3</span></div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        
+        <div id="overlay">
+            <div class="logo-box">
+                <img src="assets/images/logo_psd.png" alt="Logo PSD">
+            </div>
+            <h1 id="msg-title">MISTRZ DEKARSKI</h1>
+            
+            <p style="font-size: 14px; margin: 5px 0;">Sterowanie zbieraniem:</p>
+            <div class="control-selector">
+                <button id="btn-mouse" class="ctrl-btn active" onclick="setControl('mouse')">MYSZKA</button>
+                <button id="btn-keys" class="ctrl-btn" onclick="setControl('keys')">KLAWIATURA</button>
+            </div>
+
+            <p id="msg-p-info">Wybierz tryb:</p>
+            <button class="btn" onclick="initGame('classic')">Tryb Klasyczny</button>
+            <button class="btn" style="background-color: #444;" onclick="initGame('build')">Tryb Budowa</button>
+            <button class="btn" style="background-color: #2b2b2b;" onclick="initTowerMode()">Tryb Wieżowiec</button>
+
+            <div class="settings-box">
+                <label>Muzyka</label>
+                <input type="range" id="musicVol" min="0" max="1" step="0.01" value="0.2">
+                <label>Dźwięki</label>
+                <input type="range" id="sfxVol" min="0" max="1" step="0.01" value="0.2">
+            </div>
+
+            <div class="credits">Muzyka i efekty dźwiękowe z pixabay.com</div>
+        </div>
+    </div>
+
+    <script src="assets/js/game.js"></script>
+    <script src="assets/js/tower.js"></script>
+</body>
+</html>

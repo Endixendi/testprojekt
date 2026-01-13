@@ -1,0 +1,135 @@
+:root {
+    --psd-red: #E31E24;
+    --psd-grey: #2B2B2B;
+    --psd-dark: #1a1a1a;
+    --psd-green: #2ecc71;
+}
+
+body {
+    margin: 0; padding: 0; overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--psd-dark); color: white;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100vh; touch-action: none;
+}
+
+#game-container {
+    position: relative; width: 100%; max-width: 600px; height: 85vh;
+    background: linear-gradient(to bottom, #1a1a1a, #333);
+    border: 4px solid var(--psd-grey); border-bottom: 8px solid var(--psd-red);
+    box-shadow: 0 0 20px rgba(0,0,0,0.5); overflow: hidden;
+}
+
+canvas { display: block; width: 100%; height: 100%; }
+
+.ui-layer {
+    position: absolute; top: 15px; left: 15px; pointer-events: none;
+    display: flex; gap: 20px; font-size: 20px; font-weight: bold; text-shadow: 1px 1px 2px #000; z-index: 5;
+}
+
+#overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.95); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; z-index: 10; padding: 20px; box-sizing: border-box;
+}
+
+.logo-box { margin-bottom: 10px; }
+.logo-box img { height: auto; max-height: 80px; width: 180px; object-fit: contain; display: block; margin: 0 auto; }
+
+.control-selector { display: flex; gap: 10px; margin: 10px 0; width: 300px; }
+.ctrl-btn {
+    flex: 1; padding: 8px; background: #444; border: 2px solid transparent; 
+    color: white; cursor: pointer; font-weight: bold; border-radius: 4px; font-size: 12px;
+}
+.ctrl-btn.active { border-color: var(--psd-red); background: var(--psd-red); }
+
+.btn {
+    background-color: var(--psd-red); color: white; border: none;
+    padding: 12px 0; font-size: 18px; font-weight: bold;
+    text-transform: uppercase; cursor: pointer; margin-top: 8px; border-radius: 4px; width: 300px;
+}
+
+.settings-box {
+    background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-top: 15px; width: 300px;
+}
+.settings-box label { display: block; font-size: 12px; margin-bottom: 4px; color: #aaa; }
+input[type=range] { width: 100%; accent-color: var(--psd-red); margin-bottom: 8px; }
+
+.credits { font-size: 10px; color: #666; margin-top: 10px; }
+
+/* Animacje błysków */
+.damage-flash { animation: flashRed 0.3s linear; }
+.heal-flash { animation: flashGreen 0.3s linear; }
+
+@keyframes flashRed {
+    0% { border-color: #ff0000; box-shadow: inset 0 0 40px rgba(255,0,0,0.5); }
+    100% { border-color: var(--psd-grey); box-shadow: none; }
+}
+@keyframes flashGreen {
+    0% { border-color: var(--psd-green); box-shadow: inset 0 0 40px rgba(46,204,113,0.5); }
+    100% { border-color: var(--psd-grey); box-shadow: none; }
+}
+
+/* Telefon */
+
+/* Ukrywamy sterowanie domyślnie na każdym urządzeniu */
+#mobile-controls {
+    display: none !important; 
+    width: 100%;
+    max-width: 600px;
+    padding: 10px;
+    box-sizing: border-box;
+    background: #1a1a1a;
+}
+
+/* Pokazujemy tylko wtedy, gdy JS wykryje dotyk LUB mały ekran */
+#mobile-controls.active-device {
+    display: block !important;
+}
+
+@media (max-width: 768px) {
+    /* Opcjonalnie: możesz tu zostawić automatyczne wykrywanie rozmiaru */
+}
+
+.mobile-btn {
+    width: 100%;
+    height: 60px;
+    background: var(--psd-red);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 15px;
+    display: none; /* Pokażemy tylko w trybach budowania */
+}
+
+#touch-slider-area {
+    width: 100%;
+    height: 50px;
+    position: relative;
+    background: #333;
+    border-radius: 25px;
+    touch-action: none;
+}
+
+#slider-handle {
+    width: 60px;
+    height: 40px;
+    background: var(--psd-red);
+    position: absolute;
+    top: 5px;
+    left: 0;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+/* Wyświetlanie tylko na dotyku */
+@media (max-width: 768px) {
+    #mobile-controls { display: block; }
+}
