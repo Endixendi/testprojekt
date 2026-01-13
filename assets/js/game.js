@@ -301,7 +301,7 @@ function drawCrane() {
 }
 
 function drawTruck(x, y, w, h) {
-  const c = { t: "#333", cb: "#232323", a: "#E31E24", wh: "#111", win: "#555" };
+  const c = { t: "#232323", cb: "#232323", a: "#E31E24", wh: "#111", win: "#555" };
   let tw = w * 0.7,
     cw = w * 0.3,
     bh = h - 8;
